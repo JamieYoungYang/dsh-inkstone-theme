@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Inkstone Theme",
+    "description": "Adds 配色方案 / 字体 / 强调色强度 / 侧栏材质 rows to Settings → General. Seven palettes — 汝窑 (Ru-ware blue), 赭石 (ochre), 松烟 (pine-soot, always dark), 青瓷 (celadon), 紫毫 (purple), 宣纸 (paper), 胭脂 (rouge) — each with a light and a dark scheme, a canvas gradient, and its own typeface direction. Typeface can follow the palette or be forced to sans / serif / mono. Accent strength has three levels. Every pair is audited (1554 contrast checks, 0 failures).",
+    "detail": "docs/DETAIL.md"
+  }
+}
