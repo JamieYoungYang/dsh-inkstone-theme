@@ -54,5 +54,10 @@
   "engines": {
     "node": "^22.19.0 || >=24.0.0",
     "dsh": ">=0.2.2-rc.1"
+  },
+  "scripts": {
+    "audit": "node audit.mjs",
+    "pack:check": "npm pack --dry-run",
+    "release": "npm publish --access public --registry https://registry.npmjs.org"
   }
 }

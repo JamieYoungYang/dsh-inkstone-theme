@@ -41,6 +41,16 @@ node audit.mjs          # 142 个必需 token 全覆盖 + 1554 组对比度 + �
 
 发包前这套必须 0 失败。
 
+## 发布
+
+本机 `~/.npmrc` 默认指向华为云镜像（只读缓存），**发布必须显式指回官方源**：
+
+```bash
+npm login --registry https://registry.npmjs.org   # 只需一次
+npm run audit                                      # 0 失败才发
+npm run release                                    # = npm publish --access public --registry https://registry.npmjs.org
+```
+
 ## 许可
 
 MIT。色板取值部分派生自 ui-standard 契约源，已在 DESIGN.md 注明。
