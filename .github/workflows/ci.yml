@@ -15,7 +15,7 @@ jobs:
           node-version: 22
       # 142 个必需 token 覆盖 + 1554 组对比度 + 边框上下限
       - name: Contrast and token audit
-        run: node audit.mjs
+        run: npm run audit
       - name: Manifest sanity
         run: |
           node -e "const p=require('./package.json');

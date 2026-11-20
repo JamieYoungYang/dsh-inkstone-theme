@@ -14,6 +14,7 @@
     "index.js",
     "client.js",
     "audit.mjs",
+    "check-locale.mjs",
     "tokens.required.json",
     "cordis.patch.yml",
     "DESIGN.md",
@@ -56,7 +57,7 @@
     "dsh": ">=0.2.2-rc.1"
   },
   "scripts": {
-    "audit": "node audit.mjs",
+    "audit": "node audit.mjs && node check-locale.mjs",
     "pack:check": "npm pack --dry-run",
     "release": "npm publish --access public --registry https://registry.npmjs.org"
   }
