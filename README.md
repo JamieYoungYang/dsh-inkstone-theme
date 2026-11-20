@@ -4,6 +4,33 @@
 
 **汝窑 · 赭石 · 松烟 · 青瓷 · 紫毫 · 宣纸 · 胭脂** —— 器物自带颜色，名字就是取色说明。
 
+## 安装
+
+三个来源，任选其一。
+
+**① Release 包（推荐，免构建）**
+
+```bash
+curl -LO https://github.com/JamieYoungYang/dsh-inkstone-theme/releases/download/v1.0.0/dsh-inkstone-theme-1.0.0.tgz
+tar xzf dsh-inkstone-theme-1.0.0.tgz      # 解出 package/
+```
+
+然后在 DSH 里 **插件 → 添加插件**，指向解压出来的 `package` 目录。
+
+**② 直接从 git 装**
+
+```bash
+git clone https://github.com/JamieYoungYang/dsh-inkstone-theme.git
+```
+
+同样在 **插件 → 添加插件** 里指向该目录。
+
+**③ npm**（若已发布）
+
+```bash
+npm i dsh-inkstone-theme
+```
+
 ## 装完在哪看到
 
 **设置 → 通用** 里多出四行：
