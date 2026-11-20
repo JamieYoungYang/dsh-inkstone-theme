@@ -1,4 +1,5 @@
 node_modules/
 preview/
+.bak/
 *.tgz
 .DS_Store

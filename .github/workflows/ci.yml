@@ -25,8 +25,8 @@ jobs:
             console.log('manifest ok:', p.name, p.version);"
       - name: Package builds
         run: npm pack --dry-run
+      # 只查会被打包的文件，跳过工作流自身与忽略目录
       - name: No stale package identifiers
         run: |
-          if grep -rn "palette-pack" --include="*.js" --include="*.yml" --include="*.json" .; then
-            echo "stale identifier found"; exit 1
-          fi
+          hit=$(git ls-files '*.js' '*.yml' '*.json' | grep -v '^.github/' | xargs grep -ln "palette-pack" || true)
+          if [ -n "$hit" ]; then echo "stale identifier in: $hit"; exit 1; fi
