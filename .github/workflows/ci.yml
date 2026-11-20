@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # 142 个必需 token 覆盖 + 1554 组对比度 + 边框上下限
+      - name: Contrast and token audit
+        run: node audit.mjs
+      - name: Manifest sanity
+        run: |
+          node -e "const p=require('./package.json');
+            if (p.private) throw new Error('package must not be private');
+            if (!p.license) throw new Error('license missing');
+            if (!p.engines || !p.engines.dsh) throw new Error('engines.dsh missing');
+            console.log('manifest ok:', p.name, p.version);"
+      - name: Package builds
+        run: npm pack --dry-run
+      - name: No stale package identifiers
+        run: |
+          if grep -rn "palette-pack" --include="*.js" --include="*.yml" --include="*.json" .; then
+            echo "stale identifier found"; exit 1
+          fi
