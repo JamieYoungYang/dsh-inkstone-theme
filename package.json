@@ -1,6 +1,6 @@
 {
   "name": "dsh-inkstone-theme",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Seven ink-wash palettes for DeepSeek Harness — 汝窑 赭石 松烟 青瓷 紫毫 宣纸 胭脂 — with a typeface layer (follow palette / sans / serif / mono), canvas gradients, and an audited contrast matrix.",
   "type": "module",
   "main": "./index.js",
