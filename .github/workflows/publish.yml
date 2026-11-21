@@ -1,0 +1,27 @@
+name: Publish
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # Trusted Publishing：用 OIDC 换短期凭据，不需要 npm token
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install -g npm@latest
+      - name: Audit
+        run: npm run audit
+      # 需要先在 npmjs.com 上为这个包配置 Trusted Publisher：
+      #   Package → Settings → Trusted Publisher → GitHub Actions
+      #   Repository: JamieYoungYang/dsh-inkstone-theme
+      #   Workflow: publish.yml
+      - name: Publish with provenance
+        run: npm publish --access public --provenance
