@@ -244,7 +244,11 @@ window.__ModuleLoader__.load({
   {
     "id": "default",
     "label": "DSH",
-    "preview": { "light": "#ffffff", "dark": "#151517", "accent": "#4176e6" }
+    "preview": {
+      "light": "#ffffff",
+      "dark": "#151517",
+      "accent": "#4176e6"
+    }
   },
   {
     "id": "board",
@@ -419,7 +423,7 @@ window.__ModuleLoader__.load({
       "accent": "#3ddc97"
     },
     "gradient": {
-      "washTint": 0.15,
+      "washTint": 0.06,
       "accent": true
     },
     "light": {
@@ -435,9 +439,9 @@ window.__ModuleLoader__.load({
         "#405149"
       ],
       "text": [
-        "#eaf7ef",
-        "#a6c6b4",
-        "#7c9d8a"
+        "#dbdfdc",
+        "#bdc1bf",
+        "#9a9e9b"
       ],
       "accent": "#3ddc97",
       "accentSoft": "#143c2b",
@@ -449,7 +453,7 @@ window.__ModuleLoader__.load({
       "code": "#0c231a",
       "codeBanner": "#0b2018",
       "inline": "#153528",
-      "tooltipBg": "#eaf7ef",
+      "tooltipBg": "#dbdfdc",
       "tooltipFg": "#0a1d15",
       "success": "#5fd39b",
       "warn": "#e3b061",
@@ -470,9 +474,9 @@ window.__ModuleLoader__.load({
         "#3d4742"
       ],
       "text": [
-        "#eefaf3",
-        "#a9c9b7",
-        "#7fa08d"
+        "#dbdfdc",
+        "#bdc1bf",
+        "#9a9e9b"
       ],
       "accent": "#54e8a8",
       "accentSoft": "#163b2a",
@@ -485,7 +489,7 @@ window.__ModuleLoader__.load({
       "codeBanner": "#06120c",
       "inline": "#0f2419",
       "tooltipBg": "#142e20",
-      "tooltipFg": "#eefaf3",
+      "tooltipFg": "#dbdfdc",
       "success": "#5fd39b",
       "warn": "#e3b061",
       "error": "#ff8b82",
@@ -1114,7 +1118,7 @@ window.__ModuleLoader__.load({
         '--dsw-specific-sidebar-nav-item-active': r.navActive,
         // 侧栏原生上下渐变的四个端点也归色板管：顶部染一点强调色，底部压一点墨，
         // 否则渐变还是 DSH 默认主题的冷蓝，和色板对不上。
-        '--dsw-specific-sidebar-wash-top': rgba(r.accent, luminance(r.bg) < 0.4 ? 0.16 : 0.08),
+        '--dsw-specific-sidebar-wash-top': rgba(r.accent, luminance(r.bg) < 0.4 ? 0.06 : 0.08),
         '--dsw-specific-sidebar-wash-top-clear': rgba(r.accent, 0),
         '--dsw-specific-sidebar-wash-bottom-clear': rgba(luminance(r.bg) < 0.4 ? '#ffffff' : '#000000', 0),
         '--dsw-specific-sidebar-wash-bottom': rgba(luminance(r.bg) < 0.4 ? '#ffffff' : '#000000', luminance(r.bg) < 0.4 ? 0.06 : 0.04),
