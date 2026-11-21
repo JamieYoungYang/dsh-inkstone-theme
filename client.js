@@ -44,6 +44,7 @@ window.__ModuleLoader__.load({
     }
     const STRENGTH_KEY = 'dsh-theme-pack:strength:v1';
     const SIDEBAR_KEY = 'dsh-theme-pack:sidebar:v1';
+    const BRAND_KEY = 'dsh-inkstone-theme:brand:v1';
     /** Style tag identity, so a reloaded bundle replaces rather than stacks. */
     const STYLE_ID = 'dsh-inkstone-theme/InkstoneRow.css';
 
@@ -61,6 +62,10 @@ window.__ModuleLoader__.load({
       'palette.dusk.tagline': '兔毫笔锋里的一点紫',
       'palette.kanagawa.tagline': '宣纸本色，落墨即字',
       'palette.watermelon.tagline': '胭脂是妆色，也是印泥的红',
+      'brand.title': '侧栏品牌行',
+      'brand.desc': '侧栏顶部那个 deepseek HARNESS 标识；隐藏后侧栏从第一行功能开始。',
+      'brand.hide': '隐藏',
+      'brand.show': '显示',
       'font.title': '字体',
       'font.desc': '跟随色板时，衬线色板（赭石）配衬线，其余用系统无衬线。',
       'font.auto': '跟随色板',
@@ -96,6 +101,10 @@ window.__ModuleLoader__.load({
       'palette.dusk.tagline': 'Purple-hair brush',
       'palette.kanagawa.tagline': 'Xuan paper',
       'palette.watermelon.tagline': 'Rouge',
+      'brand.title': "Sidebar brand",
+      'brand.desc': "The deepseek HARNESS mark at the top of the sidebar.",
+      'brand.hide': "Hidden",
+      'brand.show': "Shown",
       'font.title': "Typeface",
       'font.desc': "Follow palette gives the serif palette (Ochre) a serif face; everything else stays on the system sans.",
       'font.auto': "Follow palette",
@@ -1281,11 +1290,13 @@ window.__ModuleLoader__.load({
     let activeId = 'default';
     let strength = 0;
     let sidebarMode = 'theme';
+    let brandMode = 'hide';
     let fontMode = 'auto';
     const listeners = new Set();
     let switchPalette = () => {};
     let switchStrength = () => {};
     let switchSidebar = () => {};
+    let switchBrand = () => {};
     let switchFont = () => {};
 
     function byId(id) {
@@ -1348,6 +1359,27 @@ window.__ModuleLoader__.load({
 
     function getSidebarMode() {
       return sidebarMode;
+    }
+
+    /* 侧栏品牌行（deepseek HARNESS）默认隐藏：它占的是主题的视觉预算，不是功能。 */
+    function readBrandMode() {
+      try {
+        return window.localStorage.getItem(BRAND_KEY) === 'show' ? 'show' : 'hide';
+      } catch (error) {
+        return 'hide';
+      }
+    }
+
+    function saveBrandMode(mode) {
+      try {
+        window.localStorage.setItem(BRAND_KEY, mode);
+      } catch (error) {
+        /* Storage may be disabled; the mode still applies for this load. */
+      }
+    }
+
+    function getBrandMode() {
+      return brandMode;
     }
 
     function readFontMode() {
@@ -1431,6 +1463,10 @@ window.__ModuleLoader__.load({
       '@media (prefers-reduced-motion: reduce){.dsh-tp-card,.dsh-tp-chip,.dsh-tp-toggle,.dsh-tp-chevron{transition:none!important}}',
       /* 侧栏跟随主题时保留 DSH 原生的上下渐变（wash-top → wash-bottom，叠在 tint 上），只把底色换成主题的 tint。用简写 background 会连 background-image 一起清零，所以这里拆成 background-color + background-image 两条。 */
       '[data-inkstone-sidebar]{background-color:var(--dsw-specific-sidebar-tint,var(--dsw-specific-sidebar-fill))!important;background-image:linear-gradient(to bottom, var(--dsw-specific-sidebar-wash-top), var(--dsw-specific-sidebar-wash-top-clear) 35%, var(--dsw-specific-sidebar-wash-bottom-clear) 68%, var(--dsw-specific-sidebar-wash-bottom))!important}',
+      /* 品牌行隐藏：类名带构建哈希，用后缀匹配；元素仍在 DOM 里，findSidebarRoot 不受影响。 */
+      'html[data-inkstone-hide-brand] [class*="_logoRow"] [class*="_brand"]{display:none!important}',
+      /* logoRow 本身有 40px 高度，光藏内容会留一块空白；收到 12px 只保住拖拽区。 */
+      'html[data-inkstone-hide-brand] [class*="_logoRow"]{height:12px!important;overflow:hidden}',
       /* 侧栏列与主区之间的那条 .5px 实线是 DSH 写死的 border-right。
          两侧已经有明度差（ΔL≈0.03）和渐变，这条线是多余的一笔，直接去掉。
          用 [class*="_sidebarCol"] 而不是完整类名：哈希前缀会变，后缀是稳定的。 */
@@ -1499,14 +1535,14 @@ window.__ModuleLoader__.load({
      * sidebar material switch.
      */
     function PaletteRow({ t }) {
-      const [view, setView] = useState(() => ({ palette: getActive(), strength: getStrength(), sidebar: getSidebarMode(), font: getFontMode() }));
+      const [view, setView] = useState(() => ({ palette: getActive(), strength: getStrength(), sidebar: getSidebarMode(), font: getFontMode(), brand: getBrandMode() }));
       const [classicOpen, setClassicOpen] = useState(() => {
         const active = byId(getActive());
         return active !== undefined && metaOf(active).group === 'classic';
       });
       const desktop = isDarwinDesktop();
       useEffect(() => {
-        const listener = () => setView({ palette: getActive(), strength: getStrength(), sidebar: getSidebarMode(), font: getFontMode() });
+        const listener = () => setView({ palette: getActive(), strength: getStrength(), sidebar: getSidebarMode(), font: getFontMode(), brand: getBrandMode() });
         listeners.add(listener);
         return () => listeners.delete(listener);
       }, []);
@@ -1632,6 +1668,21 @@ window.__ModuleLoader__.load({
               },
               h('span', null, t(key)),
             )))),
+        h('div', { className: 'dsh-tp-sub' },
+          h('div', { className: 'dsh-tp-title' }, t('brand.title')),
+          h('div', { className: 'dsh-tp-desc' }, t('brand.desc')),
+          h('div', { className: 'dsh-tp-actions', role: 'group', 'aria-label': t('brand.title') },
+            [['hide', 'brand.hide'], ['show', 'brand.show']].map(([mode, key]) => h(
+              'button',
+              {
+                key: mode,
+                type: 'button',
+                className: 'dsh-tp-chip dsh-tp-chip-sm',
+                'aria-pressed': view.brand === mode,
+                onClick: () => switchBrand(mode),
+              },
+              h('span', null, t(key)),
+            )))),
         desktop && h('div', { className: 'dsh-tp-sub' },
           h('div', { className: 'dsh-tp-title' }, t('sidebar.title')),
           h('div', { className: 'dsh-tp-desc' }, t('sidebar.desc')),
@@ -1674,6 +1725,13 @@ window.__ModuleLoader__.load({
        * 把该色板的渐变写成两个自定义属性。只由令牌派生（color-mix），
        * 所以明暗切换时自动跟着走，不需要第二套值。
        */
+      const applyBrand = () => {
+        const root = document.documentElement;
+        if (root === undefined || root === null || typeof root.setAttribute !== 'function') return;
+        if (brandMode === 'hide') root.setAttribute('data-inkstone-hide-brand', '');
+        else root.removeAttribute('data-inkstone-hide-brand');
+      };
+
       const applyGradient = (palette) => {
         const root = document.documentElement;
         if (root === undefined || root === null || root.style === undefined) return;
@@ -1694,6 +1752,7 @@ window.__ModuleLoader__.load({
           layerDispose = null;
         }
         const palette = byId(activeId);
+        applyBrand();
         applyGradient(palette);
         if (palette === undefined || palette.id === 'default') return;
         layerDispose = ctx.theme.overrideTokens(SOURCE, tokensOf(palette, strength));
@@ -1710,6 +1769,7 @@ window.__ModuleLoader__.load({
       activeId = readStored();
       strength = readStrength();
       sidebarMode = readSidebarMode();
+      brandMode = readBrandMode();
       fontMode = readFontMode();
       mount();
       syncSidebar();
@@ -1729,6 +1789,15 @@ window.__ModuleLoader__.load({
         sidebarMode = mode;
         saveSidebarMode(mode);
         syncSidebar();
+        for (const listener of listeners) listener();
+      };
+
+      switchBrand = (mode) => {
+        if (mode !== 'hide' && mode !== 'show') return;
+        if (mode === brandMode) return;
+        brandMode = mode;
+        saveBrandMode(mode);
+        applyBrand();
         for (const listener of listeners) listener();
       };
 
