@@ -244,7 +244,11 @@ window.__ModuleLoader__.load({
   {
     "id": "default",
     "label": "DSH",
-    "preview": { "light": "#ffffff", "dark": "#151517", "accent": "#4176e6" }
+    "preview": {
+      "light": "#ffffff",
+      "dark": "#151517",
+      "accent": "#4176e6"
+    }
   },
   {
     "id": "board",
@@ -748,7 +752,8 @@ window.__ModuleLoader__.load({
     },
     "gradient": {
       "washTint": 0.14,
-      "accent": true
+      "accent": true,
+      "vivid": 1.7
     },
     "light": {
       "bg": "#f4e0e5",
@@ -881,7 +886,7 @@ window.__ModuleLoader__.load({
      * choices carried by the core; only mechanical values (hover alphas, soft
      * tints, scrollbars) are derived, so every palette behaves the same way.
      */
-    function rolesFrom(core) {
+    function rolesFrom(core, vivid) {
       const dark = core.dark === true;
       const bg = core.bg;
       const surface = core.surface;
@@ -901,6 +906,7 @@ window.__ModuleLoader__.load({
         surface2,
         surface3,
         sidebar: core.sidebar,
+        vivid: vivid === undefined ? 1 : vivid,
         navActive: mix(core.sidebar, accent, dark ? 0.24 : 0.2),
         navAccent: mix(core.sidebar, accent, dark ? 0.32 : 0.28),
         input: dark ? surface2 : surface,
@@ -1030,6 +1036,14 @@ window.__ModuleLoader__.load({
      * 侧栏色 = 画布掺一点强调色（保住色相），再压一档明度。
      * 只混同一个色板的两个值，不引入新颜色。
      */
+    /** 保色相、抬彩度：把每个通道推离均值。k=1 原样返回。 */
+    function boostChroma(color, k) {
+      if (k === 1) return color;
+      const [r, g, b] = rgb(color);
+      const mean = (r + g + b) / 3;
+      return hexOf([r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(mean + (v - mean) * k)))));
+    }
+
     function sidebarOf(r) {
       // 侧栏 = 画布只压明度，**不掺强调色**。
       // 掺强调色会稀释画布自己的色相：宣纸（暖纸 21）的强调色是靛蓝，
@@ -1044,7 +1058,7 @@ window.__ModuleLoader__.load({
         const err = Math.abs(luminance(candidate) - target);
         if (err < bestErr) { bestErr = err; best = candidate; }
       }
-      return best;
+      return boostChroma(best, r.vivid === undefined ? 1 : r.vivid);
     }
 
     /** Project one color scheme's roles onto DSH alias token names. */
@@ -1114,10 +1128,10 @@ window.__ModuleLoader__.load({
         // 否则渐变还是 DSH 默认主题的冷蓝，和色板对不上。
         // 深色主题：顶部用强调色（那是它的身份）；浅色主题：只做明暗，
         // 因为暖纸掺冷强调色会被中和成灰（宣纸 21 → 12）。
-        '--dsw-specific-sidebar-wash-top': dark ? rgba(r.accent, 0.16) : rgba('#ffffff', 0.07),
+        '--dsw-specific-sidebar-wash-top': dark ? rgba(r.accent, 0.16) : rgba('#ffffff', 0.10),
         '--dsw-specific-sidebar-wash-top-clear': rgba(dark ? r.accent : '#ffffff', 0),
         '--dsw-specific-sidebar-wash-bottom-clear': rgba(dark ? '#ffffff' : '#000000', 0),
-        '--dsw-specific-sidebar-wash-bottom': rgba(dark ? '#ffffff' : '#000000', dark ? 0.06 : 0.045),
+        '--dsw-specific-sidebar-wash-bottom': rgba(dark ? '#ffffff' : '#000000', dark ? 0.06 : 0.09),
         '--dsw-specific-sidebar-nav-item-active-accent': r.navAccent,
         '--dsw-specific-tip': r.surface2,
         '--dsw-alias-state-business-primary': r.accent,
@@ -1276,8 +1290,9 @@ window.__ModuleLoader__.load({
         '--dsh-font-family-terminal': CODE_STACK,
         '--dsw-font-family': stack,
       };
-      const light = { ...applyStrength(tokenSet(rolesFrom(palette.light)), palette.light, level), ...fontTokens };
-      const dark = { ...applyStrength(tokenSet(rolesFrom(palette.dark)), palette.dark, level), ...fontTokens };
+      const vivid = palette.gradient === undefined || palette.gradient.vivid === undefined ? 1 : palette.gradient.vivid;
+      const light = { ...applyStrength(tokenSet(rolesFrom(palette.light, vivid)), palette.light, level), ...fontTokens };
+      const dark = { ...applyStrength(tokenSet(rolesFrom(palette.dark, vivid)), palette.dark, level), ...fontTokens };
       const pairs = {};
       for (const name of Object.keys(light)) pairs[name] = { light: light[name], dark: dark[name] };
       TOKEN_CACHE.set(key, pairs);
