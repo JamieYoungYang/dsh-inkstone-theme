@@ -237,6 +237,21 @@ window.__ModuleLoader__.load({
       return pick;
     }
 
+    /**
+     * 强调淡底（徽章/选中 chip 的底）：按"比卡片暗 0.04"归一，
+     * 而不是固定混 8%——深强调色（赭石、胭脂）混同样比例会明显更重。
+     */
+    function softFor(surface, accent, dark) {
+      const target = dark ? 0.05 : -0.04;
+      let pick = mix(surface, accent, 0.04);
+      for (let k = 0.04; k <= 0.24; k += 0.01) {
+        pick = mix(surface, accent, k);
+        if (Math.abs(oklabL(pick) - oklabL(surface) - target) <= 0.012) break;
+        if (dark ? oklabL(pick) - oklabL(surface) > target : oklabL(pick) - oklabL(surface) < target) break;
+      }
+      return pick;
+    }
+
     /** 同明度的中性灰。 */
     function grayOf(color) {
       const [r, g, b] = rgb(color);
@@ -1014,7 +1029,7 @@ window.__ModuleLoader__.load({
         menuIcon: text2,
         link: core.link,
         accent,
-        accentSoft: mix(surface, accent, dark ? 0.14 : 0.08),
+        accentSoft: softFor(surface, accent, dark),
         brand: cta,
         brandInvert: bg,
         brandText: ctaFg,
@@ -1218,6 +1233,8 @@ window.__ModuleLoader__.load({
         '--dsw-specific-sidebar-nav-item-active-accent': r.navAccent,
         '--dsw-specific-tip': r.surface2,
         '--dsw-alias-state-business-primary': r.accent,
+        // 聚焦环：强调色掺 25% 卡片色，深强调色不至于变成一圈重线
+        '--dsw-focus-ring-color': ensureContrast(mix(r.accent, r.surface, 0.25), r.surface, 3),
         '--dsw-alias-state-business-tertiary': r.accentSoft,
         '--dsw-alias-state-done-primary': r.done,
         '--dsw-alias-state-error-primary': r.error,
@@ -1325,7 +1342,7 @@ window.__ModuleLoader__.load({
         '--shiki-token-string-expression': ensureContrast(mix(r.success, r.code, 0.15), r.code, 4.5),
         '--shiki-token-punctuation': ensureContrast(r.label2, r.code, 4.5),
         '--shiki-token-link': ensureContrast(r.link, r.code, 4.5),
-        '--dsw-focus-ring-color': r.accent,
+        '--dsw-focus-ring-color': ensureContrast(mix(r.accent, r.surface, 0.25), r.surface, 3),
       };
     }
 

@@ -131,6 +131,7 @@ function checks(t, mode) {
     TEXT('accent text on canvas', v('--dsw-alias-state-business-primary'), v('--dsw-alias-bg-base'), 4.5),
     TEXT('accent text on card', v('--dsw-alias-state-business-primary'), v('--dsw-alias-bg-layer-1'), 4.5),
     TEXT('focus accent on card', v('--dsw-alias-state-business-primary'), v('--dsw-alias-bg-layer-1'), 3),
+    TEXT('focus ring on card', v('--dsw-focus-ring-color'), v('--dsw-alias-bg-layer-1'), 3),
     TEXT('ink on accent button', v('--dsw-alias-label-on-color'), v('--dsw-alias-button-info-fill'), 3),
     TEXT('ink on error fill', v('--dsw-alias-label-on-color'), v('--dsw-alias-state-error-primary'), 3),
     TEXT('ink on primary button', v('--dsw-alias-label-primary-foreground'), v('--dsw-alias-button-primary-fill'), 4.5),
