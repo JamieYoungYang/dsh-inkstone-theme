@@ -1583,6 +1583,16 @@ window.__ModuleLoader__.load({
       'html[data-inkstone-hide-brand] [class*="_logoRow"] [class*="_brand"]{display:none!important}',
       /* logoRow 本身有 40px 高度，光藏内容会留一块空白；收到 12px 只保住拖拽区。 */
       'html[data-inkstone-hide-brand] [class*="_logoRow"]{height:12px!important;overflow:hidden}',
+
+      /* 换色板时的交叉淡入：只在 html[data-inkstone-transition] 存在的 240ms 内生效，
+         静止状态不参与任何过渡；系统开启"减少动态效果"时整条规则不生效。 */
+      '@media (prefers-reduced-motion: no-preference){',
+      '  html[data-inkstone-transition] body,',
+      '  html[data-inkstone-transition] body *{',
+      '    transition: background-color 240ms ease, color 240ms ease, border-color 240ms ease, fill 240ms ease !important;',
+      '  }',
+      '}',
+
       /* 侧栏列与主区之间的那条 .5px 实线是 DSH 写死的 border-right。
          两侧已经有明度差（ΔL≈0.03）和渐变，这条线是多余的一笔，直接去掉。
          用 [class*="_sidebarCol"] 而不是完整类名：哈希前缀会变，后缀是稳定的。 */
@@ -1862,11 +1872,27 @@ window.__ModuleLoader__.load({
       };
 
       let layerDispose = null;
+      let transitionTimer = null;
+      let mountedOnce = false;
+      /** 换色板/强度/字体时给整页 240ms 的颜色过渡（首次挂载不淡入）。 */
+      const flashTransition = () => {
+        const root = document.documentElement;
+        if (root === undefined || root === null || typeof root.setAttribute !== 'function') return;
+        root.setAttribute('data-inkstone-transition', '');
+        if (transitionTimer !== null) window.clearTimeout(transitionTimer);
+        transitionTimer = window.setTimeout(() => {
+          root.removeAttribute('data-inkstone-transition');
+          transitionTimer = null;
+        }, 280);
+      };
+
       const mount = () => {
         if (layerDispose !== null) {
           layerDispose();
           layerDispose = null;
         }
+        if (mountedOnce) flashTransition();
+        mountedOnce = true;
         const palette = byId(activeId);
         applyBrand();
         applyGradient(palette);
@@ -1950,6 +1976,10 @@ window.__ModuleLoader__.load({
         if (sidebarTimer !== null) {
           window.clearInterval(sidebarTimer);
           sidebarTimer = null;
+        }
+        if (transitionTimer !== null) {
+          window.clearTimeout(transitionTimer);
+          transitionTimer = null;
         }
         const root = findSidebarRoot();
         if (root !== null) root.removeAttribute('data-inkstone-sidebar');
