@@ -1031,19 +1031,17 @@ window.__ModuleLoader__.load({
      * 只混同一个色板的两个值，不引入新颜色。
      */
     function sidebarOf(r) {
+      // 侧栏 = 画布只压明度，**不掺强调色**。
+      // 掺强调色会稀释画布自己的色相：宣纸（暖纸 21）的强调色是靛蓝，
+      // 一掺就变成灰纸（10）。强调色交给顶部那层 wash 去表达。
       const dark = luminance(r.bg) < 0.4;
-      // 1) 掺一点自己的强调色，保住色相（DSH 默认会把蓝洗成灰）
-      const base = mix(r.bg, r.accent, dark ? 0.1 : 0.025);
-      // 2) 按"相对画布"的目标明度找比例：浅色 -0.03，深色压到 62%。
-      //    写死百分比会在深浅两端各自过头——亮度是非线性的。
-      const targetL = dark ? luminance(r.bg) * 0.62 : Math.max(0, luminance(r.bg) - 0.03);
-      const baseL = luminance(base);
-      const toward = targetL < baseL ? '#000000' : '#ffffff';
-      let best = base;
+      const target = dark ? luminance(r.bg) * 0.62 : Math.max(0, luminance(r.bg) - 0.03);
+      const toward = target < luminance(r.bg) ? '#000000' : '#ffffff';
+      let best = r.bg;
       let bestErr = Infinity;
-      for (let t = 0; t <= 0.8; t += 0.004) {
-        const candidate = mix(base, toward, t);
-        const err = Math.abs(luminance(candidate) - targetL);
+      for (let t = 0; t <= 0.6; t += 0.004) {
+        const candidate = mix(r.bg, toward, t);
+        const err = Math.abs(luminance(candidate) - target);
         if (err < bestErr) { bestErr = err; best = candidate; }
       }
       return best;
@@ -1114,10 +1112,12 @@ window.__ModuleLoader__.load({
         '--dsw-specific-sidebar-nav-item-active': r.navActive,
         // 侧栏原生上下渐变的四个端点也归色板管：顶部染一点强调色，底部压一点墨，
         // 否则渐变还是 DSH 默认主题的冷蓝，和色板对不上。
-        '--dsw-specific-sidebar-wash-top': rgba(r.accent, luminance(r.bg) < 0.4 ? 0.16 : 0.08),
-        '--dsw-specific-sidebar-wash-top-clear': rgba(r.accent, 0),
-        '--dsw-specific-sidebar-wash-bottom-clear': rgba(luminance(r.bg) < 0.4 ? '#ffffff' : '#000000', 0),
-        '--dsw-specific-sidebar-wash-bottom': rgba(luminance(r.bg) < 0.4 ? '#ffffff' : '#000000', luminance(r.bg) < 0.4 ? 0.06 : 0.04),
+        // 深色主题：顶部用强调色（那是它的身份）；浅色主题：只做明暗，
+        // 因为暖纸掺冷强调色会被中和成灰（宣纸 21 → 12）。
+        '--dsw-specific-sidebar-wash-top': dark ? rgba(r.accent, 0.16) : rgba('#ffffff', 0.07),
+        '--dsw-specific-sidebar-wash-top-clear': rgba(dark ? r.accent : '#ffffff', 0),
+        '--dsw-specific-sidebar-wash-bottom-clear': rgba(dark ? '#ffffff' : '#000000', 0),
+        '--dsw-specific-sidebar-wash-bottom': rgba(dark ? '#ffffff' : '#000000', dark ? 0.06 : 0.045),
         '--dsw-specific-sidebar-nav-item-active-accent': r.navAccent,
         '--dsw-specific-tip': r.surface2,
         '--dsw-alias-state-business-primary': r.accent,
