@@ -1593,6 +1593,29 @@ window.__ModuleLoader__.load({
       '  }',
       '}',
 
+      /* 焦点环淡入：outline-color 可动画，120ms 足够让"跳出来的框"变成"亮起来的框"。 */
+      '@media (prefers-reduced-motion: no-preference){',
+      '  button:focus-visible,',
+      '  a:focus-visible,',
+      '  [role="button"]:focus-visible,',
+      '  input:focus-visible,',
+      '  textarea:focus-visible,',
+      '  select:focus-visible,',
+      '  [tabindex]:focus-visible{',
+      '    transition: outline-color 120ms ease, box-shadow 120ms ease;',
+      '  }',
+      '}',
+      /* 侧栏项的 hover / 按下过渡：只在侧栏内部、只动背景与文字色，120ms。
+         范围刻意收窄到可交互元素，避免整棵子树参与过渡。 */
+      '@media (prefers-reduced-motion: no-preference){',
+      '  [class*="_sidebarCol"] a,',
+      '  [class*="_sidebarCol"] button,',
+      '  [class*="_sidebarCol"] [role="button"],',
+      '  [class*="_sidebarCol"] [class*="_nav"],',
+      '  [class*="_sidebarCol"] [class*="_item"]{',
+      '    transition: background-color 120ms ease, color 120ms ease;',
+      '  }',
+      '}',
       /* 侧栏列与主区之间的那条 .5px 实线是 DSH 写死的 border-right。
          两侧已经有明度差（ΔL≈0.03）和渐变，这条线是多余的一笔，直接去掉。
          用 [class*="_sidebarCol"] 而不是完整类名：哈希前缀会变，后缀是稳定的。 */
