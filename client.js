@@ -272,7 +272,8 @@ window.__ModuleLoader__.load({
     },
     "gradient": {
       "washTint": 0.11,
-      "accent": false
+      "accent": false,
+      "tint": 0.05
     },
     "light": {
       "bg": "#e9eefb",
@@ -354,7 +355,8 @@ window.__ModuleLoader__.load({
     },
     "gradient": {
       "washTint": 0.1,
-      "accent": false
+      "accent": false,
+      "tint": 0.04
     },
     "light": {
       "bg": "#e4cebe",
@@ -518,7 +520,8 @@ window.__ModuleLoader__.load({
     },
     "gradient": {
       "washTint": 0.14,
-      "accent": true
+      "accent": true,
+      "tint": 0.05
     },
     "light": {
       "bg": "#dceff0",
@@ -600,7 +603,8 @@ window.__ModuleLoader__.load({
     },
     "gradient": {
       "washTint": 0.14,
-      "accent": true
+      "accent": true,
+      "tint": 0.05
     },
     "light": {
       "bg": "#ebe5f7",
@@ -682,7 +686,8 @@ window.__ModuleLoader__.load({
     },
     "gradient": {
       "washTint": 0.14,
-      "accent": true
+      "accent": true,
+      "tint": 0.03
     },
     "light": {
       "bg": "#f2ecdd",
@@ -1065,8 +1070,7 @@ window.__ModuleLoader__.load({
       const dark = luminance(r.bg) < 0.4;
       // 声明了 tint 的色板（如胭脂）：画布掺一点自己的强调色，变成"更浓的同色纸"
       if (r.tint > 0) {
-        const tinted = mix(r.bg, r.accent, r.tint);
-        return boostChroma(mix(tinted, '#000000', 0.03), r.vivid === undefined ? 1 : r.vivid);
+        return boostChroma(mix(r.bg, r.accent, r.tint), r.vivid === undefined ? 1 : r.vivid);
       }
       // 其余色板：只压明度，保住画布自己的色相
       const targetL = dark ? luminance(r.bg) * 0.62 : oklabL(r.bg) - 0.025;
@@ -1149,11 +1153,10 @@ window.__ModuleLoader__.load({
         // 否则渐变还是 DSH 默认主题的冷蓝，和色板对不上。
         // 深色主题：顶部用强调色（那是它的身份）；浅色主题：只做明暗，
         // 因为暖纸掺冷强调色会被中和成灰（宣纸 21 → 12）。
-        '--dsw-specific-sidebar-wash-top': dark ? rgba(r.accent, 0.16)
-          : (r.tint > 0 ? rgba(r.accent, 0.10) : rgba('#ffffff', 0.10)),
-        '--dsw-specific-sidebar-wash-top-clear': rgba(dark || r.tint > 0 ? r.accent : '#ffffff', 0),
+        '--dsw-specific-sidebar-wash-top': dark ? rgba(r.accent, 0.16) : rgba('#ffffff', 0.10),
+        '--dsw-specific-sidebar-wash-top-clear': rgba(dark ? r.accent : '#ffffff', 0),
         '--dsw-specific-sidebar-wash-bottom-clear': rgba(dark ? '#ffffff' : '#000000', 0),
-        '--dsw-specific-sidebar-wash-bottom': rgba(dark ? '#ffffff' : '#000000', dark ? 0.06 : (r.tint > 0 ? 0.10 : 0.09)),
+        '--dsw-specific-sidebar-wash-bottom': rgba(dark ? '#ffffff' : '#000000', dark ? 0.06 : 0.10),
         '--dsw-specific-sidebar-nav-item-active-accent': r.navAccent,
         '--dsw-specific-tip': r.surface2,
         '--dsw-alias-state-business-primary': r.accent,
