@@ -193,6 +193,62 @@ window.__ModuleLoader__.load({
       return contrast('#111111', background) >= contrast('#ffffff', background) ? '#111111' : '#ffffff';
     }
 
+    /** 色相角（0–360）。 */
+    function hueOf(color) {
+      const [r, g, b] = rgb(color).map((v) => v / 255);
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      if (max === min) return 0;
+      const d = max - min;
+      const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      return (h * 60 + 360) % 360;
+    }
+
+    /** 两个颜色在色相环上的最短夹角（0–180°）。 */
+    function hueGap(a, b) {
+      const d = Math.abs(hueOf(a) - hueOf(b));
+      return d > 180 ? 360 - d : d;
+    }
+
+    /**
+     * 气泡色：默认用强调色淡染；若算出来和画布几乎同明度（赭石这种画布本身就深），
+     * 就逐档加深，直到与画布拉开 0.03 的观感差。互补色板则改用画布自己的深一档。
+     */
+    function bubbleFor(surface, accent, bg, dark, strong) {
+      const gap = hueGap(accent, bg) > 90;
+      let pick = surface;
+      // 互补色板：掺强调色会中和成灰，改用画布自己的深一档
+      if (gap) {
+        // 互补色板：从画布出发往黑里压，保住纸的色相（往 surface 混往往不够深）
+        for (let k = 0.04; k <= 0.30; k += 0.02) {
+          pick = mix(bg, '#000000', k);
+          if (Math.abs(oklabL(pick) - oklabL(bg)) >= 0.03) break;
+        }
+        return pick;
+      }
+      // 同族：逐 1% 加深，取**刚好**拉开 0.03 的那一档（不要一步跨过头）
+      const from = strong ? 0.24 : 0.10;
+      const to = strong ? 0.40 : 0.32;
+      pick = mix(surface, accent, from);
+      for (let k = from; k <= to; k += 0.01) {
+        pick = mix(surface, accent, k);
+        if (Math.abs(oklabL(pick) - oklabL(bg)) >= 0.03) break;
+      }
+      return pick;
+    }
+
+    /** 同明度的中性灰。 */
+    function grayOf(color) {
+      const [r, g, b] = rgb(color);
+      const m = Math.round((r + g + b) / 3);
+      return hexOf([m, m, m]);
+    }
+
+    /** 朝中性灰靠拢：k=1 全灰，k=0 原色。 */
+    function neutral(color, k) {
+      return mix(color, grayOf(color), k);
+    }
+
     function toHsl(color) {
       const [r, g, b] = rgb(color).map((v) => v / 255);
       const max = Math.max(r, g, b);
@@ -932,13 +988,15 @@ window.__ModuleLoader__.load({
         loginInput: surface2,
         menu: dark ? surface2 : surface,
         menuHeader: dark ? surface3 : surface2,
-        bubble: core.bubble,
-        bubbleHi: core.bubbleHi,
-        code: core.code,
-        codeBanner: core.codeBanner,
-        inlineCode: core.inline || core.code,
+        // 气泡：用强调色淡染，比画布更"浮"（原来直接抄 core.bubble，和画布几乎同色）
+        bubble: bubbleFor(surface, accent, bg, dark, false),
+        bubbleHi: bubbleFor(surface, accent, bg, dark, true),
+        // 代码块：中性且向内凹。代码不该带主题的情绪色
+        code: neutral(mix(surface, '#000000', dark ? 0.16 : 0.05), 0.85),
+        codeBanner: neutral(mix(surface, '#000000', dark ? 0.22 : 0.08), 0.85),
+        inlineCode: neutral(mix(surface, '#000000', dark ? 0.12 : 0.035), 0.8),
         codeSel: surface,
-        codeUnsel: core.code,
+        codeUnsel: neutral(mix(surface, '#000000', dark ? 0.16 : 0.05), 0.85),
         border1,
         border2,
         border3,
@@ -956,7 +1014,7 @@ window.__ModuleLoader__.load({
         menuIcon: text2,
         link: core.link,
         accent,
-        accentSoft: core.accentSoft,
+        accentSoft: mix(surface, accent, dark ? 0.14 : 0.08),
         brand: cta,
         brandInvert: bg,
         brandText: ctaFg,
@@ -975,7 +1033,7 @@ window.__ModuleLoader__.load({
         error: core.error,
         errorSec: mix(core.error, bg, 0.4),
         idle: mix(text1, bg, 0.55),
-        done: core.done,
+        done: mix(accent, text1, 0.35),
         functionColor: core.function || core.done,
         tooltipBg,
         tooltipLabel: tooltipFg,
